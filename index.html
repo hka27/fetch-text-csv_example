@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <title>example</title>
+</head>
+
+<body>
+    <canvas id="chartView" width="400px" height="200px"></canvas>
+
+    <script>
+        console.log('Hello-World');
+
+
+        plotChart();
+
+
+
+        function plotChart() {
+
+            // //using async is given below
+            // const data = await getData();
+            // const ctx = document.getElementById('chartView').getContext('2d');
+            // const myChart = new Chart(ctx, {
+            //     type: 'bar',
+            //     data: {
+            //         labels: data.years,
+            //         datasets: [{
+            //             data: data.temperatures
+            //         }]
+            //     },
+            //     options: {
+            //         scales: {
+            //             yAxes: [{
+            //                 ticks: {
+            //                     beginAtZero: true
+            //                 }
+            //             }]
+            //         }
+            //     }
+            // });
+
+
+            //   without using async
+            getData()
+                .then((data) => {
+                    const ctx = document.getElementById('chartView').getContext('2d');
+                    // const myChart = new Chart(ctx, {
+                    //     type: 'line',
+                    //     data: {
+                    //         labels: data.years,
+                    //         datasets: [{
+                    //             data: data.temperatures
+                    //         }]
+                    //     },
+                    //     options: {
+                    //         scales: {
+                    //             yAxes: [{
+                    //                 ticks: {
+                    //                     beginAtZero: true
+                    //                 }
+                    //             }]
+                    //         }
+                    //     }
+                    // });
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.years,
+                            datasets: [{
+                                label: 'Combined Land-Surface Air and Sea-Surface Water Temperature(mean-monthly)',
+                                fill: false,
+                                data: data.temperatures,
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: false
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                })
+                .catch(err => console.log(err))
+        }
+
+
+
+        function getData() {
+            const temperatures = [];
+            const years = [];
+            let data = {};
+
+            // //using async is given below
+            // const response = await fetch('ZonAnn.Ts+dSST.csv'); //ZonAnn.Ts+dSST.csv
+            // const formatedResponse = await response.text();
+            // const rowsUnform = formatedResponse.split('\n');
+            // const rowsForm = [];
+            // rowsUnform.forEach(row => {
+            //     rowsForm.push(row.split(','));
+            // });
+            // rowsForm.splice(0, 1);
+            // rowsForm.forEach(row => {
+            //     years.push(parseInt(row[0]));
+            //     temperatures.push(parseFloat(row[1])+14); // 14 is the mean temp
+            // })
+            // data.years = years;
+            // data.temperatures = temperatures;
+            // return data;
+
+
+
+            //without using async 
+            return new Promise((resolve, reject) => {
+                // console.log(Object.keys(data).length);
+                fetch('ZonAnn.Ts+dSST.csv') //ZonAnn.Ts+dSST.csv
+                    .then(response => {
+                        return response.text();
+                    })
+                    .then(formatedResponse => {
+                        const rowsUnform = formatedResponse.split('\n');
+                        const rowsForm = [];
+                        rowsUnform.forEach(row => {
+                            rowsForm.push(row.split(','));
+                        });
+                        rowsForm.splice(0, 1);
+                        rowsForm.forEach(row => {
+                            years.push(parseInt(row[0]));
+                            temperatures.push(parseFloat(row[1]) + 14); //14 is the mean temp
+                        })
+                        data.years = years;
+                        data.temperatures = temperatures;
+                        // console.log(data);
+                        return data;
+                    })
+                    .then(data => {
+                        // console.log(Object.keys(data).length);
+                        if (Object.keys(data).length == 0) {
+                            return reject(new Error('error in data creation in getData()'));
+                        } else {
+                            return resolve(data);
+                        }
+                    })
+                    .catch(err => console.log(`err in fetch of getData(): ${err}`))
+            });
+
+
+
+        }
+
+
+    </script>
+</body>
+
+</html>
